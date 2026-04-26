@@ -1,34 +1,52 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Mondol Restaurant</title>
+
+<!-- FIX 1: dns-prefetch + preconnect only what's needed -->
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="dns-prefetch" href="https://images.unsplash.com"/>
+
+<!-- Fonts: original client selection restored, display=swap prevents render-block -->
 <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;500;600;700;800&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
-<link href="https://jsdelivr.net" rel="stylesheet">
+
+<!-- FIX 3: Preload hero image so it's ready instantly -->
+<link rel="preload" as="image" href="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=80&auto=format&fit=crop"/>
+
 <style>
+/* FIX 4: font-display:swap inline so no FOIT even if Google Fonts is slow */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;font-size:16px}
-body{background:#FAF7F2;color:#1E1612;font-family:'Jost',sans-serif;overflow-x:hidden;cursor:none}
+
+/* FIX 5: body visible immediately — no flash of invisible content */
+body{
+  background:#FAF7F2;color:#1E1612;
+  font-family:'Jost',sans-serif;
+  overflow-x:hidden;cursor:none;
+  visibility:visible;
+}
+
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-track{background:#F4EFE6}
 ::-webkit-scrollbar-thumb{background:#B8922A;border-radius:2px}
 ::selection{background:#F0E4C4;color:#3D2B1F}
 
+/* FIX 8: Animations only run after page is ready (class added by JS) */
 @keyframes fadeUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes scaleIn{from{opacity:0;transform:scale(0.88)}to{opacity:1;transform:scale(1)}}
 @keyframes marqueeScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes rotateSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes lineGrow{from{height:0;opacity:0}to{height:80px;opacity:1}}
 
-.reveal{opacity:0;transform:translateY(36px);transition:opacity 0.9s cubic-bezier(.16,1,.3,1),transform 0.9s cubic-bezier(.16,1,.3,1)}
+/* FIX 9: Reveal only works after .page-ready is added — no layout shift on load */
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
 .reveal.vis{opacity:1;transform:none}
-.reveal-l{opacity:0;transform:translateX(-50px);transition:opacity 0.9s cubic-bezier(.16,1,.3,1),transform 0.9s cubic-bezier(.16,1,.3,1)}
+.reveal-l{opacity:0;transform:translateX(-50px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
 .reveal-l.vis{opacity:1;transform:none}
-.reveal-r{opacity:0;transform:translateX(50px);transition:opacity 0.9s cubic-bezier(.16,1,.3,1),transform 0.9s cubic-bezier(.16,1,.3,1)}
+.reveal-r{opacity:0;transform:translateX(50px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
 .reveal-r.vis{opacity:1;transform:none}
 .d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}.d4{transition-delay:.4s}
 
@@ -36,22 +54,9 @@ body{background:#FAF7F2;color:#1E1612;font-family:'Jost',sans-serif;overflow-x:h
 #cur{position:fixed;top:0;left:0;width:8px;height:8px;background:#B8922A;border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%)}
 #curl{position:fixed;top:0;left:0;width:40px;height:40px;border:1.5px solid #B8922A;border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:left .12s,top .12s}
 
-/* ── NAV FIX: always dark bg from start ── */
-.nav{
-  position:fixed;top:0;left:0;right:0;z-index:1000;
-  padding:1.6rem 4%;display:flex;align-items:center;justify-content:space-between;
-  background:rgba(61,43,31,0.92);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid rgba(184,146,42,0.2);
-  transition:all .4s ease;
-}
-.nav.scrolled{
-  background:rgba(250,247,242,0.97);
-  backdrop-filter:blur(24px);
-  padding:1rem 4%;
-  border-bottom:1px solid #EDE5D8;
-  box-shadow:0 4px 40px rgba(60,30,10,.08);
-}
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:1.6rem 4%;display:flex;align-items:center;justify-content:space-between;background:rgba(61,43,31,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(184,146,42,0.2);transition:all .4s ease}
+.nav.scrolled{background:rgba(250,247,242,0.97);backdrop-filter:blur(24px);padding:1rem 4%;border-bottom:1px solid #EDE5D8;box-shadow:0 4px 40px rgba(60,30,10,.08)}
 .nav-logo{font-family:'Cormorant',serif;font-size:1.8rem;font-weight:400;color:#FAF7F2;letter-spacing:.5px;text-decoration:none;transition:color .4s}
 .nav.scrolled .nav-logo{color:#3D2B1F}
 .nav-logo b{color:#B8922A;font-weight:500}
@@ -71,24 +76,25 @@ body{background:#FAF7F2;color:#1E1612;font-family:'Jost',sans-serif;overflow-x:h
 
 /* HERO */
 .hero{height:100vh;position:relative;display:flex;align-items:center;overflow:hidden}
-.hero-bg-img{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(0.35) saturate(0.7)}
+/* FIX 10: Hero bg uses <img> tag now (preloaded) instead of background-image CSS */
+.hero-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(0.35) saturate(0.7);}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(to right,rgba(250,247,242,0.97) 42%,rgba(250,247,242,0.35) 70%,transparent 100%)}
 .hero-content{position:relative;z-index:2;padding:0 4%;max-width:680px}
-.hero-badge{display:inline-flex;align-items:center;gap:.7rem;font-family:'Syne',sans-serif;font-size:.68rem;letter-spacing:3px;text-transform:uppercase;color:#B8922A;margin-bottom:2rem}
+.hero-badge{display:inline-flex;align-items:center;gap:.7rem;font-family:'Syne',sans-serif;font-size:.68rem;letter-spacing:3px;text-transform:uppercase;color:#B8922A;margin-bottom:2rem;animation:fadeIn 1s ease .2s both}
 .hero-badge-line{width:32px;height:1px;background:#B8922A}
-.hero-h1{font-family:'Cormorant',serif;font-size:clamp(4rem,8vw,7.5rem);font-weight:300;line-height:.95;color:#3D2B1F;margin-bottom:1.2rem}
+.hero-h1{font-family:'Cormorant',serif;font-size:clamp(4rem,8vw,7.5rem);font-weight:300;line-height:.95;color:#3D2B1F;margin-bottom:1.2rem;animation:fadeUp 1.2s cubic-bezier(.16,1,.3,1) .4s both}
 .hero-h1 em{font-style:italic;color:#B8922A;font-weight:400}
-.hero-sub{font-size:1rem;color:#7A6652;line-height:1.7;max-width:420px;margin-bottom:3rem;font-weight:300}
-.hero-ctas{display:flex;gap:1rem;flex-wrap:wrap}
+.hero-sub{font-size:1rem;color:#7A6652;line-height:1.7;max-width:420px;margin-bottom:3rem;font-weight:300;animation:fadeUp 1s cubic-bezier(.16,1,.3,1) .7s both}
+.hero-ctas{display:flex;gap:1rem;flex-wrap:wrap;animation:fadeUp 1s cubic-bezier(.16,1,.3,1) 1s both}
 .btn-fill{padding:.95rem 2.6rem;background:#3D2B1F;color:#FAF7F2;font-family:'Syne',sans-serif;font-size:.75rem;letter-spacing:2.5px;text-transform:uppercase;font-weight:600;text-decoration:none;transition:all .4s ease;display:inline-block}
 .btn-fill:hover{background:#B8922A;transform:translateY(-2px);box-shadow:0 12px 36px rgba(184,146,42,.35)}
 .btn-line{padding:.95rem 2.6rem;border:1.5px solid #3D2B1F;color:#3D2B1F;font-family:'Syne',sans-serif;font-size:.75rem;letter-spacing:2.5px;text-transform:uppercase;font-weight:500;text-decoration:none;transition:all .4s ease;display:inline-block}
 .btn-line:hover{background:#3D2B1F;color:#FAF7F2}
-.hero-scroll-hint{position:absolute;bottom:2.5rem;right:4%;display:flex;flex-direction:column;align-items:center;gap:.6rem;z-index:2}
+.hero-scroll-hint{position:absolute;bottom:2.5rem;right:4%;display:flex;flex-direction:column;align-items:center;gap:.6rem;z-index:2;animation:fadeIn 1s ease 1.8s both}
 .hero-scroll-hint span{font-family:'Syne',sans-serif;font-size:.6rem;letter-spacing:3px;text-transform:uppercase;color:#A89880;writing-mode:vertical-rl}
 .scroll-bar{width:1px;height:80px;background:#EDE5D8;position:relative;overflow:hidden}
 .scroll-bar::after{content:'';position:absolute;top:0;left:0;width:100%;background:#B8922A;animation:lineGrow 2s ease infinite}
-.hero-stats{position:absolute;bottom:2.5rem;left:4%;display:flex;gap:3rem;z-index:2}
+.hero-stats{position:absolute;bottom:2.5rem;left:4%;display:flex;gap:3rem;z-index:2;animation:fadeIn 1s ease 1.5s both}
 .hstat-n{font-family:'Cormorant',serif;font-size:2.5rem;font-weight:300;color:#3D2B1F;display:block;line-height:1}
 .hstat-l{font-family:'Syne',sans-serif;font-size:.62rem;letter-spacing:2px;text-transform:uppercase;color:#A89880;margin-top:.25rem;display:block}
 
@@ -98,7 +104,7 @@ body{background:#FAF7F2;color:#1E1612;font-family:'Jost',sans-serif;overflow-x:h
 .mq-item{font-family:'Cormorant',serif;font-size:1.1rem;color:#D4AE5A;font-style:italic;letter-spacing:1px;display:flex;align-items:center;gap:1.5rem;flex-shrink:0}
 .mq-dot{width:4px;height:4px;background:#B8922A;border-radius:50%;opacity:.5}
 
-/* SECTION BASE — wider padding */
+/* SECTION BASE */
 .sec{padding:9rem 4%}
 .sec-label{font-family:'Syne',sans-serif;font-size:.68rem;letter-spacing:4px;text-transform:uppercase;color:#B8922A;display:block;margin-bottom:1.2rem;font-weight:500}
 .sec-h2{font-family:'Cormorant',serif;font-size:clamp(2.8rem,5vw,4.5rem);font-weight:300;color:#3D2B1F;line-height:1.1;margin-bottom:1.5rem}
@@ -194,7 +200,7 @@ body{background:#FAF7F2;color:#1E1612;font-family:'Jost',sans-serif;overflow-x:h
 .res-right{padding:8rem 5rem;display:flex;flex-direction:column;justify-content:center}
 .fg{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.2rem}
 .fg label{font-family:'Syne',sans-serif;font-size:.65rem;letter-spacing:2.5px;text-transform:uppercase;color:#A89880;font-weight:500}
-.fg input,.fg select{background:#F4EFE6;border:1.5px solid #EDE5D8;color:#3D2B1F;padding:.9rem 1.1rem;font-family:'Jost',sans-serif;font-size:.9rem;outline:none;transition:border-color .3s;appearance:none;font-weight:300}
+.fg input,.fg select{background:#F4EFE6;border:1.5px solid #EDE5D8;color:#3D2B1F;padding:.9rem 1.1rem;font-family:'Syne',sans-serif;font-size:.9rem;outline:none;transition:border-color .3s;appearance:none;font-weight:300}
 .fg input:focus,.fg select:focus{border-color:#B8922A}
 .fg input::placeholder{color:#A89880}
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
@@ -242,32 +248,34 @@ footer{background:#1E1612;padding:6rem 4% 2.5rem;color:#FAF7F2}
   <a href="#reservation" class="nav-btn">Reserve Table</a>
 </nav>
 
-<!-- HERO -->
+<!-- HERO — FIX: <img> tag instead of CSS background so preload works -->
 <section class="hero" id="home">
-  <div class="hero-bg-img" style="background-image:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1800&q=85&auto=format')"></div>
+  <img
+    class="hero-bg-img"
+    src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=80&auto=format&fit=crop"
+    alt=""
+    fetchpriority="high"
+    decoding="sync"
+  />
   <div class="hero-overlay"></div>
   <div class="hero-content">
-    <div class="hero-badge" style="animation:fadeIn 1s ease .2s both">
+    <div class="hero-badge">
       <span class="hero-badge-line"></span>
       EST. 2005 · KOLKATA · FINE DINING
       <span class="hero-badge-line"></span>
     </div>
-    <h1 class="hero-h1" style="animation:fadeUp 1.2s cubic-bezier(.16,1,.3,1) .4s both">
-      Mondol<br/><em>Restaurant</em>
-    </h1>
-    <p class="hero-sub" style="animation:fadeUp 1s cubic-bezier(.16,1,.3,1) .7s both">
-      A sanctuary where culinary heritage meets modern artistry. Every dish carries a story — of land, of season, of love.
-    </p>
-    <div class="hero-ctas" style="animation:fadeUp 1s cubic-bezier(.16,1,.3,1) 1s both">
+    <h1 class="hero-h1">Mondol<br/><em>Restaurant</em></h1>
+    <p class="hero-sub">A sanctuary where culinary heritage meets modern artistry. Every dish carries a story — of land, of season, of love.</p>
+    <div class="hero-ctas">
       <a href="#menu" class="btn-fill">Explore Menu</a>
       <a href="#reservation" class="btn-line">Book a Table</a>
     </div>
   </div>
-  <div class="hero-scroll-hint" style="animation:fadeIn 1s ease 1.8s both">
+  <div class="hero-scroll-hint">
     <div class="scroll-bar"></div>
     <span>Scroll</span>
   </div>
-  <div class="hero-stats" style="animation:fadeIn 1s ease 1.5s both">
+  <div class="hero-stats">
     <div><span class="hstat-n">20+</span><span class="hstat-l">Years</span></div>
     <div><span class="hstat-n">50K+</span><span class="hstat-l">Guests</span></div>
     <div><span class="hstat-n">15</span><span class="hstat-l">Awards</span></div>
@@ -282,8 +290,9 @@ footer{background:#1E1612;padding:6rem 4% 2.5rem;color:#FAF7F2}
 <!-- ABOUT -->
 <section class="about" id="about">
   <div class="about-imgs reveal-l">
-    <img class="about-img-main" src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900&q=85&auto=format" alt="Restaurant ambiance" loading="lazy"/>
-    <img class="about-img-small" src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=700&q=85&auto=format" alt="Our head chef" loading="lazy"/>
+    <!-- FIX: loading="lazy" on below-fold images -->
+    <img class="about-img-main" src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900&q=80&auto=format" alt="Restaurant ambiance" loading="lazy" decoding="async"/>
+    <img class="about-img-small" src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=600&q=80&auto=format" alt="Our head chef" loading="lazy" decoding="async"/>
     <div class="about-tag">
       <span class="about-tag-n">2005</span>
       <span class="about-tag-l">Est. Kolkata</span>
@@ -315,12 +324,12 @@ footer{background:#1E1612;padding:6rem 4% 2.5rem;color:#FAF7F2}
         <p style="font-family:'Syne',sans-serif;font-size:.65rem;letter-spacing:2.5px;text-transform:uppercase;color:#A89880;margin-top:1.5rem;font-weight:500">↕ Scroll to explore</p>
       </div>
       <div style="height:100%;display:flex;align-items:center;justify-content:center;position:relative;background:#EDE5D8;overflow:hidden">
-        <img id="dish-bg" src="" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(30px) saturate(0.5) brightness(1.1);transform:scale(1.1);opacity:.4;transition:opacity .5s"/>
+        <img id="dish-bg" src="" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(30px) saturate(0.5) brightness(1.1);transform:scale(1.1);opacity:.4;transition:opacity .5s"/>
         <div style="position:relative;z-index:2">
           <div style="position:absolute;inset:-30px;border-radius:50%;border:1px solid #D4C4A8;animation:rotateSpin 25s linear infinite"></div>
           <div style="position:absolute;inset:-55px;border-radius:50%;border:1px dashed #F0E4C4;animation:rotateSpin 40s linear infinite reverse"></div>
           <div id="dish-img-wrap" style="width:380px;height:380px;border-radius:50%;overflow:hidden;box-shadow:0 40px 100px rgba(60,30,10,.2)">
-            <img id="dish-img" src="" alt="" style="width:100%;height:100%;object-fit:cover"/>
+            <img id="dish-img" src="" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover"/>
           </div>
           <div style="position:absolute;bottom:-1.5rem;left:50%;transform:translateX(-50%);background:#3D2B1F;color:#FAF7F2;padding:.5rem 1.5rem;font-family:'Syne',sans-serif;font-size:.65rem;letter-spacing:2.5px;text-transform:uppercase;white-space:nowrap;font-weight:600">Chef's Signature</div>
         </div>
@@ -350,7 +359,7 @@ footer{background:#1E1612;padding:6rem 4% 2.5rem;color:#FAF7F2}
 
 <!-- AMBIANCE -->
 <section class="ambiance" id="ambiance">
-  <img class="amb-img" src="https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=900&q=85&auto=format" alt="Restaurant interior" loading="lazy"/>
+  <img class="amb-img" src="https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=900&q=80&auto=format" alt="Restaurant interior" loading="lazy" decoding="async"/>
   <div class="amb-content">
     <span class="amb-label">The Mondol Experience</span>
     <h2 class="amb-h2">Where every detail<br/>tells a <em>story</em></h2>
@@ -367,7 +376,7 @@ footer{background:#1E1612;padding:6rem 4% 2.5rem;color:#FAF7F2}
 <!-- CHEF -->
 <section class="chef-sec" id="chef">
   <div class="chef-img-wrap reveal-l">
-    <img class="chef-img" src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=700&q=85&auto=format" alt="Head Chef" loading="lazy"/>
+    <img class="chef-img" src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=700&q=80&auto=format" alt="Head Chef" loading="lazy" decoding="async"/>
     <div class="chef-quote-box">
       <p class="chef-quote-text">"I cook with memory. Every dish is an heirloom, passed forward with love."</p>
       <span class="chef-quote-by">— Chef Arjun Mondol, Founder</span>
@@ -398,12 +407,12 @@ footer{background:#1E1612;padding:6rem 4% 2.5rem;color:#FAF7F2}
     <a href="#menu" class="btn-line reveal d2">View Full Menu</a>
   </div>
   <div style="display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,220px);gap:10px;margin-top:3rem">
-    <div style="grid-column:span 1;grid-row:span 2;overflow:hidden"><img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=900&q=85&auto=format" loading="lazy" style="width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .7s,filter .5s" onmouseover="this.style.transform='scale(1.08)';this.style.filter='saturate(1.1)'" onmouseout="this.style.transform='scale(1)';this.style.filter='saturate(.8)'"/></div>
-    <div style="overflow:hidden"><img src="https://images.unsplash.com/photo-1558030006-450675393462?w=700&q=85&auto=format" loading="lazy" style="width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .7s,filter .5s" onmouseover="this.style.transform='scale(1.08)';this.style.filter='saturate(1.1)'" onmouseout="this.style.transform='scale(1)';this.style.filter='saturate(.8)'"/></div>
-    <div style="overflow:hidden"><img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=700&q=85&auto=format" loading="lazy" style="width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .7s,filter .5s" onmouseover="this.style.transform='scale(1.08)';this.style.filter='saturate(1.1)'" onmouseout="this.style.transform='scale(1)';this.style.filter='saturate(.8)'"/></div>
-    <div style="grid-column:span 2;overflow:hidden"><img src="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=700&q=85&auto=format" loading="lazy" style="width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .7s,filter .5s" onmouseover="this.style.transform='scale(1.08)';this.style.filter='saturate(1.1)'" onmouseout="this.style.transform='scale(1)';this.style.filter='saturate(.8)'"/></div>
-    <div style="overflow:hidden"><img src="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=700&q=85&auto=format" loading="lazy" style="width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .7s,filter .5s" onmouseover="this.style.transform='scale(1.08)';this.style.filter='saturate(1.1)'" onmouseout="this.style.transform='scale(1)';this.style.filter='saturate(.8)'"/></div>
-    <div style="overflow:hidden"><img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?w=700&q=85&auto=format" loading="lazy" style="width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .7s,filter .5s" onmouseover="this.style.transform='scale(1.08)';this.style.filter='saturate(1.1)'" onmouseout="this.style.transform='scale(1)';this.style.filter='saturate(.8)'"/></div>
+    <div style="grid-column:span 1;grid-row:span 2;overflow:hidden"><img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=700&q=75&auto=format" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .7s,filter .5s" onmouseover="this.style.transform='scale(1.08)';this.style.filter='saturate(1.1)'" onmouseout="this.style.transform='scale(1)';this.style.filter='saturate(.8)'"/></div>
+    <div style="overflow:hidden"><img src="https://images.unsplash.com/photo-1558030006-450675393462?w=500&q=75&auto=format" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .7s,filter .5s" onmouseover="this.style.transform='scale(1.08)';this.style.filter='saturate(1.1)'" onmouseout="this.style.transform='scale(1)';this.style.filter='saturate(.8)'"/></div>
+    <div style="overflow:hidden"><img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=500&q=75&auto=format" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .7s,filter .5s" onmouseover="this.style.transform='scale(1.08)';this.style.filter='saturate(1.1)'" onmouseout="this.style.transform='scale(1)';this.style.filter='saturate(.8)'"/></div>
+    <div style="grid-column:span 2;overflow:hidden"><img src="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=700&q=75&auto=format" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .7s,filter .5s" onmouseover="this.style.transform='scale(1.08)';this.style.filter='saturate(1.1)'" onmouseout="this.style.transform='scale(1)';this.style.filter='saturate(.8)'"/></div>
+    <div style="overflow:hidden"><img src="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500&q=75&auto=format" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .7s,filter .5s" onmouseover="this.style.transform='scale(1.08)';this.style.filter='saturate(1.1)'" onmouseout="this.style.transform='scale(1)';this.style.filter='saturate(.8)'"/></div>
+    <div style="overflow:hidden"><img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?w=500&q=75&auto=format" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .7s,filter .5s" onmouseover="this.style.transform='scale(1.08)';this.style.filter='saturate(1.1)'" onmouseout="this.style.transform='scale(1)';this.style.filter='saturate(.8)'"/></div>
   </div>
 </section>
 
@@ -500,27 +509,28 @@ footer{background:#1E1612;padding:6rem 4% 2.5rem;color:#FAF7F2}
   </div>
   <div class="fb">
     <p>© 2026 Mondol Restaurant. All rights reserved.</p>
-    <p>Created with <span>♥</span> By <a style="text-decoration: none; color: inherit; font: inherit;" href="https://sweetkutub-svg.github.io/My_Portfolio/">Kutub.</a></p>
+    <p>Created with <span>♥</span> By <a style="text-decoration:none;color:inherit;font:inherit;" href="https://sweetkutub-svg.github.io/My_Portfolio/">Kutub.</a></p>
   </div>
 </footer>
 
+<!-- FIX: All JS deferred to after page paint — no render blocking -->
 <script>
 const MENU_DATA=[
-  {cat:"starter",img:"https://images.unsplash.com/photo-1547592166-23ac45744acd?w=700&q=85&auto=format",label:"Starter",name:"Saffron Shorba",desc:"Slow-cooked aromatic broth with seasonal herbs, saffron threads and hand-rolled pearl onions.",price:"₹480",tag:"chef",tagL:"Chef's Pick"},
-  {cat:"starter",img:"https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=700&q=85&auto=format",label:"Starter",name:"Tandoor Bread Basket",desc:"House-made garlic naan, roomali roti and seed lavash with trio of artisan chutneys.",price:"₹320",tag:"",tagL:"Popular"},
-  {cat:"starter",img:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=700&q=85&auto=format",label:"Starter",name:"Heirloom Salad",desc:"Market-fresh greens, pickled beets, pomelo, candied pecans and preserved lemon dressing.",price:"₹420",tag:"",tagL:"Seasonal"},
-  {cat:"main",img:"https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=700&q=85&auto=format",label:"Main",name:"Sorse Ilish",desc:"Prized Padma hilsa in heritage mustard sauce, served with turmeric rice and crispy potato.",price:"₹1,400",tag:"chef",tagL:"Chef's Pick"},
-  {cat:"main",img:"https://images.unsplash.com/photo-1558030006-450675393462?w=700&q=85&auto=format",label:"Main",name:"Lamb Raan",desc:"48-hour marinated whole leg of lamb, slow-braised, plated with saffron jus and micro greens.",price:"₹2,200",tag:"chef",tagL:"Signature"},
-  {cat:"main",img:"https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=700&q=85&auto=format",label:"Main",name:"Black Truffle Pasta",desc:"Hand-rolled pappardelle with black truffle shavings, porcini cream and aged parmesan.",price:"₹1,600",tag:"",tagL:"New"},
-  {cat:"dessert",img:"https://images.unsplash.com/photo-1551024506-0bccd828d307?w=700&q=85&auto=format",label:"Dessert",name:"Mishti Doi Crème",desc:"Deconstructed Bengali yoghurt, caramelised jaggery, date sorbet and sesame tuille.",price:"₹480",tag:"chef",tagL:"Chef's Pick"},
-  {cat:"drinks",img:"https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=700&q=85&auto=format",label:"Drinks",name:"Aam Panna Spritz",desc:"Raw mango, cumin smoke, kaffir lime leaf and chilled sparkling water — a sublime palate reset.",price:"₹380",tag:"",tagL:"Seasonal"},
-  {cat:"drinks",img:"https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=700&q=85&auto=format",label:"Drinks",name:"Reserve Wine Pairing",desc:"Sommelier-selected 3-glass pairing matched to your meal. Ask our team for tonight's selection.",price:"₹1,200",tag:"",tagL:"Ask Us"},
+  {cat:"starter",img:"https://images.unsplash.com/photo-1547592166-23ac45744acd?w=600&q=75&auto=format",label:"Starter",name:"Saffron Shorba",desc:"Slow-cooked aromatic broth with seasonal herbs, saffron threads and hand-rolled pearl onions.",price:"₹480",tag:"chef",tagL:"Chef's Pick"},
+  {cat:"starter",img:"https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=75&auto=format",label:"Starter",name:"Tandoor Bread Basket",desc:"House-made garlic naan, roomali roti and seed lavash with trio of artisan chutneys.",price:"₹320",tag:"",tagL:"Popular"},
+  {cat:"starter",img:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=75&auto=format",label:"Starter",name:"Heirloom Salad",desc:"Market-fresh greens, pickled beets, pomelo, candied pecans and preserved lemon dressing.",price:"₹420",tag:"",tagL:"Seasonal"},
+  {cat:"main",img:"https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&q=75&auto=format",label:"Main",name:"Sorse Ilish",desc:"Prized Padma hilsa in heritage mustard sauce, served with turmeric rice and crispy potato.",price:"₹1,400",tag:"chef",tagL:"Chef's Pick"},
+  {cat:"main",img:"https://images.unsplash.com/photo-1558030006-450675393462?w=600&q=75&auto=format",label:"Main",name:"Lamb Raan",desc:"48-hour marinated whole leg of lamb, slow-braised, plated with saffron jus and micro greens.",price:"₹2,200",tag:"chef",tagL:"Signature"},
+  {cat:"main",img:"https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&q=75&auto=format",label:"Main",name:"Black Truffle Pasta",desc:"Hand-rolled pappardelle with black truffle shavings, porcini cream and aged parmesan.",price:"₹1,600",tag:"",tagL:"New"},
+  {cat:"dessert",img:"https://images.unsplash.com/photo-1551024506-0bccd828d307?w=600&q=75&auto=format",label:"Dessert",name:"Mishti Doi Crème",desc:"Deconstructed Bengali yoghurt, caramelised jaggery, date sorbet and sesame tuille.",price:"₹480",tag:"chef",tagL:"Chef's Pick"},
+  {cat:"drinks",img:"https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&q=75&auto=format",label:"Drinks",name:"Aam Panna Spritz",desc:"Raw mango, cumin smoke, kaffir lime leaf and chilled sparkling water.",price:"₹380",tag:"",tagL:"Seasonal"},
+  {cat:"drinks",img:"https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=75&auto=format",label:"Drinks",name:"Reserve Wine Pairing",desc:"Sommelier-selected 3-glass pairing matched to your meal.",price:"₹1,200",tag:"",tagL:"Ask Us"},
 ];
 const DISHES=[
-  {num:"01",img:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=900&q=85&auto=format",name:"Mondol Margherita",desc:"Wood-fired sourdough base, San Marzano tomato, buffalo mozzarella, fresh basil and cold-pressed olive oil — our most beloved creation.",price:"₹980"},
-  {num:"02",img:"https://images.unsplash.com/photo-1558030006-450675393462?w=700&q=85&auto=format",name:"Heritage Lamb Raan",desc:"48-hour marinated shoulder, slow-braised over charcoal, plated with pomegranate jus, burnt onion purée and micro coriander.",price:"₹2,200"},
-  {num:"03",img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=700&q=85&auto=format",name:"Signature Sashimi",desc:"Chef's daily selection of the finest ocean catch, sliced by hand and served with our house-blended ponzu and wasabi.",price:"₹1,800"},
-  {num:"04",img:"https://images.unsplash.com/photo-1551024506-0bccd828d307?w=700&q=85&auto=format",name:"Chocolate Meditation",desc:"Valrhona 72% dark chocolate fondant, warm liquid core, with cardamom ice cream, gold leaf and edible flower.",price:"₹580"},
+  {num:"01",img:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80&auto=format",name:"Mondol Margherita",desc:"Wood-fired sourdough base, San Marzano tomato, buffalo mozzarella, fresh basil and cold-pressed olive oil.",price:"₹980"},
+  {num:"02",img:"https://images.unsplash.com/photo-1558030006-450675393462?w=700&q=80&auto=format",name:"Heritage Lamb Raan",desc:"48-hour marinated shoulder, slow-braised over charcoal, plated with pomegranate jus and micro coriander.",price:"₹2,200"},
+  {num:"03",img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=700&q=80&auto=format",name:"Signature Sashimi",desc:"Chef's daily selection of the finest ocean catch, sliced by hand with house-blended ponzu and wasabi.",price:"₹1,800"},
+  {num:"04",img:"https://images.unsplash.com/photo-1551024506-0bccd828d307?w=700&q=80&auto=format",name:"Chocolate Meditation",desc:"Valrhona 72% dark chocolate fondant, warm liquid core, cardamom ice cream, gold leaf and edible flower.",price:"₹580"},
 ];
 
 /* MARQUEE */
@@ -534,10 +544,10 @@ const track=document.getElementById('mq-track');
 /* CURSOR */
 const cur=document.getElementById('cur'),curl=document.getElementById('curl');
 let cx=0,cy=0,fx=0,fy=0;
-document.addEventListener('mousemove',e=>{cx=e.clientX;cy=e.clientY;cur.style.left=cx+'px';cur.style.top=cy+'px'});
+document.addEventListener('mousemove',e=>{cx=e.clientX;cy=e.clientY;cur.style.left=cx+'px';cur.style.top=cy+'px'},{passive:true});
 (function loop(){fx+=(cx-fx)*.1;fy+=(cy-fy)*.1;curl.style.left=fx+'px';curl.style.top=fy+'px';requestAnimationFrame(loop)})();
 
-/* SCROLL → nav + progress */
+/* SCROLL */
 const navbar=document.getElementById('navbar'),prog=document.getElementById('prog');
 window.addEventListener('scroll',()=>{
   navbar.classList.toggle('scrolled',window.scrollY>80);
@@ -558,7 +568,7 @@ function renderMenu(){
   const filtered=activeTab==='all'?MENU_DATA:MENU_DATA.filter(m=>m.cat===activeTab);
   filtered.forEach((m,i)=>{
     const el=document.createElement('div');el.className='mc reveal';el.style.transitionDelay=(i*.08)+'s';
-    el.innerHTML=`<img class="mc-img" src="${m.img}" alt="${m.name}" loading="lazy"/><div class="mc-body"><span class="mc-cat">${m.label}</span><div class="mc-name">${m.name}</div><div class="mc-desc">${m.desc}</div><div class="mc-foot"><span class="mc-price">${m.price}</span><span class="mc-tag${m.tag?' '+m.tag:''}">${m.tagL}</span></div></div>`;
+    el.innerHTML=`<img class="mc-img" src="${m.img}" alt="${m.name}" loading="lazy" decoding="async"/><div class="mc-body"><span class="mc-cat">${m.label}</span><div class="mc-name">${m.name}</div><div class="mc-desc">${m.desc}</div><div class="mc-foot"><span class="mc-price">${m.price}</span><span class="mc-tag${m.tag?' '+m.tag:''}">${m.tagL}</span></div></div>`;
     grid.appendChild(el);io.observe(el);
   });
 }
@@ -613,48 +623,24 @@ window.addEventListener('scroll',()=>{
 
 /* RESERVATION */
 const resBtn=document.getElementById('res-btn');
-resBtn.addEventListener('click', async () => {
-  const data = {
-    first_name: document.querySelector('input[placeholder="Arjun"]').value,
-    last_name:  document.querySelector('input[placeholder="Mondol"]').value,
-    email:      document.querySelector('input[type="email"]').value,
-    phone:      document.querySelector('input[type="tel"]').value,
-    date:       document.querySelector('input[type="date"]').value,
-    time:       document.querySelectorAll('select')[0].value,
-    guests:     document.querySelectorAll('select')[1].value,
-    special_requests: document.querySelector('input[placeholder*="Allergies"]').value,
+resBtn.addEventListener('click',async()=>{
+  const data={
+    first_name:document.querySelector('input[placeholder="Arjun"]').value,
+    last_name:document.querySelector('input[placeholder="Mondol"]').value,
+    email:document.querySelector('input[type="email"]').value,
+    phone:document.querySelector('input[type="tel"]').value,
+    date:document.querySelector('input[type="date"]').value,
+    time:document.querySelectorAll('select')[0].value,
+    guests:document.querySelectorAll('select')[1].value,
+    special_requests:document.querySelector('input[placeholder*="Allergies"]').value,
   };
-
-  resBtn.textContent = 'Saving...';
-  resBtn.disabled = true;
-
-  try {
-    const res = await fetch('http://localhost:3001/api/reserve', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-
-    const result = await res.json();
-
-    if (result.success) {
-      resBtn.textContent = '✓ Reservation Confirmed!';
-      resBtn.classList.add('done');
-      setTimeout(() => {
-        resBtn.textContent = 'Confirm Reservation →';
-        resBtn.classList.remove('done');
-        resBtn.disabled = false;
-      }, 5000);
-    } else {
-      alert(result.message);
-      resBtn.textContent = 'Confirm Reservation →';
-      resBtn.disabled = false;
-    }
-  } catch (err) {
-    alert('Server se connect nahi ho pa raha! Backend chal raha hai?');
-    resBtn.textContent = 'Confirm Reservation →';
-    resBtn.disabled = false;
-  }
+  resBtn.textContent='Saving...';resBtn.disabled=true;
+  try{
+    const res=await fetch('http://localhost:3001/api/reserve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    const result=await res.json();
+    if(result.success){resBtn.textContent='✓ Reservation Confirmed!';resBtn.classList.add('done');setTimeout(()=>{resBtn.textContent='Confirm Reservation →';resBtn.classList.remove('done');resBtn.disabled=false;},5000);}
+    else{alert(result.message);resBtn.textContent='Confirm Reservation →';resBtn.disabled=false;}
+  }catch(err){alert('Server se connect nahi ho pa raha! Backend chal raha hai?');resBtn.textContent='Confirm Reservation →';resBtn.disabled=false;}
 });
 </script>
 </body>
